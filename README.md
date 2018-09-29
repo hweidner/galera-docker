@@ -63,6 +63,16 @@ On the second and third node, the command is issued without the
 IP address, node name, published port number, config file name and
 data directory set to the values for node2 and node3.
 
+Note that for a real work cluster, the nodes should be started on
+different physical machines. To communicate with each other, the network
+setup has to be set up properly, e.g. by running an overlay network,
+or by using public IP addresses and exposing the ports needed by Galera
+cluster. See the
+[Docker overlay network documentation](https://docs.docker.com/network/network-tutorial-overlay/)
+or the
+[Galera cluster documentation](http://galeracluster.com/documentation-webpages/firewallsettings.html)
+for details.
+
 How it works
 ------------
 
@@ -73,11 +83,11 @@ does exactly that).
 
 To achieve this, the Dockerfile adds a temporary file
 ```/tmp/.wsrep-new-cluster``` to an otherwise unchanged official
-Galera image. This file is deleted during the first invocation. Only
-if this file exists, and if a non-empty environment variable
-```GALERA_NEW_CLUSTER``` was supplied to the container, the MariaDB
-server is started with ```--wsrep-new-cluster``` and creates a new
-cluster.
+MariaDB image. This file is deleted during the first invocation of a
+newly instanciated container. Only if this file exists, and if a
+non-empty environment variable ```GALERA_NEW_CLUSTER``` was supplied
+to the container, the MariaDB server is started with
+```--wsrep-new-cluster``` and creates a new cluster.
 
 Whenever a node is restarted, no new cluster will be restarted, because
 the file ```/tmp/.wsrep-new-cluster``` is no longer present. Instead,
