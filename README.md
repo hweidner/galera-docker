@@ -20,7 +20,7 @@ for each cluster node, and start the first node.
 
 For the following example, a custom Docker network was created:
 
-	docker network create --ip-range 172.18.0.0/16 galera
+	docker network create --subnet 172.18.0.0/16 galera
 
 Three Galera instances will be started using the IP addresses 172.18.0.10X,
 with hostnames nodeX and a data directory ```/srv/galera/nodeX``` on the
@@ -30,19 +30,10 @@ where X is in {1, 2, 3}.
 A configuration file for the first node is:
 
 	[mysqld]
-	binlog_format=ROW
-	default_storage_engine=InnoDB
-	innodb_autoinc_lock_mode=2
-	innodb_flush_log_at_trx_commit=2
-	innodb_buffer_pool_size=122M
-	innodb_doublewrite=1
-	wsrep_provider=/usr/lib/libgalera_smm.so
 	wsrep_cluster_address="gcomm://172.18.0.101,172.18.0.102,172.18.0.103"
-	wsrep_sst_method=rsync
 	wsrep_cluster_name="galera-cluster"
 	wsrep_node_name=node1
 	wsrep_node_address="172.18.0.101"
-	wsrep_on=ON
 
 For the second and third node, exchange ```wsrep_node_name``` and
 ```wsrep_node_address``` accordingly.
