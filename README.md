@@ -7,10 +7,14 @@ MariaDB with Galera Cluster.
 Building the Docker Image
 -------------------------
 
-Build the container image (you can skip this step and use the pre-built
-image from Docker Hub):
+Build the container image. (You can skip this step and use the pre-built
+image from Docker Hub.)
 
 	docker build -t hweidner/galera .
+
+The image is build on top of the existing
+[official MariaDB image](https://hub.docker.com/_/mariadb/) on
+Docker Hub, which is based on Ubuntu 18.04 LTS.
 
 Run a Galera cluster based on the image
 ---------------------------------------
@@ -30,15 +34,21 @@ where X is in {1, 2, 3}.
 A configuration file for the first node is:
 
 	[mysqld]
-	wsrep_cluster_address="gcomm://172.18.0.101,172.18.0.102,172.18.0.103"
-	wsrep_cluster_name="galera-cluster"
-	wsrep_node_name=node1
-	wsrep_node_address="172.18.0.101"
+	wsrep_cluster_address = "gcomm://172.18.0.101,172.18.0.102,172.18.0.103"
+	wsrep_cluster_name    = "galera-cluster"
+	wsrep_node_name       = "node1"
+	wsrep_node_address    = "172.18.0.101"
 
 For the second and third node, exchange ```wsrep_node_name``` and
 ```wsrep_node_address``` accordingly.
 
-The nodes can now be started with the command
+The directories /srv/galera/node{1,2,3} directories have to be writable
+by the ```mysql``` user of the container, which has UID and GID 999.
+
+	mkdir /srv/galera/node{1,2,3}
+	chown 999:999 /srv/galera/node{1,2,3}
+
+The first node can now be started with the command
 
 	docker run -d --restart=unless-stopped --net galera \
 		--name node1 -h node1 --ip 172.18.0.101 \
@@ -50,9 +60,29 @@ The nodes can now be started with the command
 		hweidner/galera
 
 On the second and third node, the command is issued without the
-```GALERA_NEW_CLUSTER``` environment variable, and of course with
-IP address, node name, published port number, config file name and
-data directory set to the values for node2 and node3.
+```GALERA_NEW_CLUSTER``` environment variable, thus connecting to the existing
+cluster instead of building a new one. The ```MYSQL_ROOT_PASSWORD``` variable
+can also be omitted as the node gets the database state from the existing
+cluster nodes.
+
+	docker run -d --restart=unless-stopped --net galera \
+		--name node2 -h node2 --ip 172.18.0.102 \
+		-p 3312:3306 \
+		-v /srv/galera/node2.cnf:/etc/mysql/conf.d/galera.cnf \
+		-v /srv/galera/node2:/var/lib/mysql \
+		hweidner/galera
+	
+	docker run -d --restart=unless-stopped --net galera \
+		--name node3 -h node3 --ip 172.18.0.103 \
+		-p 3313:3306 \
+		-v /srv/galera/node3.cnf:/etc/mysql/conf.d/galera.cnf \
+		-v /srv/galera/node3:/var/lib/mysql \
+		hweidner/galera
+
+The Galera cluster nodes are now reachable over the ports 3311, 3312 and
+3313 on the hypervisor host. They can be reached from MySQL clients, e.g.
+
+	mysql -h 127.0.0.1 -P 3311 -u root -psecret_galera_password
 
 Note that for a real work cluster, the nodes should be started on
 different physical machines. To communicate with each other, the network
