@@ -7,8 +7,9 @@ MariaDB with Galera Cluster.
 Building the Docker Image
 -------------------------
 
-Build the container image. (You can skip this step and use the pre-built
-image from Docker Hub.)
+The image build with this Dockerfile can directly be obtained from
+[Docker Hub](https://hub.docker.com/r/hweidner/galera/). If you prefer
+to build it on your own, do
 
 	docker build -t hweidner/galera .
 
