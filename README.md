@@ -4,6 +4,10 @@ Run MariaDB with Galera Cluster in Docker
 This repository contains a Dockerfile which creates a Docker image for
 MariaDB with Galera Cluster.
 
+The image is build on top of the existing
+[official MariaDB image](https://hub.docker.com/_/mariadb/) on
+Docker Hub, which is based on Ubuntu 18.04 LTS.
+
 Building the Docker Image
 -------------------------
 
@@ -13,15 +17,11 @@ to build it on your own, do
 
 	docker build -t hweidner/galera .
 
-The image is build on top of the existing
-[official MariaDB image](https://hub.docker.com/_/mariadb/) on
-Docker Hub, which is based on Ubuntu 18.04 LTS.
-
 Run a Galera cluster based on the image
 ---------------------------------------
 
 To run the image, provide a Galera config file and a data directory
-for each cluster node, and start the first node.
+for each cluster node, and start the nodes.
 
 For the following example, a custom Docker network was created:
 
@@ -91,7 +91,7 @@ setup has to be set up properly, e.g. by running an overlay network,
 or by using public IP addresses and exposing the ports needed by Galera
 cluster. See the
 [Docker overlay network documentation](https://docs.docker.com/network/network-tutorial-overlay/)
-or the
+and the
 [Galera cluster documentation](http://galeracluster.com/documentation-webpages/firewallsettings.html)
 for details.
 
@@ -114,3 +114,9 @@ to the container, the MariaDB server is started with
 Whenever a node is restarted, no new cluster will be restarted, because
 the file ```/tmp/.wsrep-new-cluster``` is no longer present. Instead,
 the node reconnects to the other two cluster nodes.
+
+License
+-------
+
+This work is released under the MIT License. See the file LICENSE.txt for
+the full text of the license.
