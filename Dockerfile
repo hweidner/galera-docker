@@ -1,4 +1,4 @@
-FROM mariadb:10.3-bionic
+FROM mariadb:10.6
 MAINTAINER Harald Weidner <hweidner@gmx.net>
 
 RUN touch /tmp/.wsrep-new-cluster && chown -R mysql:mysql /tmp/.wsrep-new-cluster

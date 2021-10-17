@@ -5,17 +5,15 @@ This repository contains a Dockerfile which creates a Docker image for
 MariaDB with Galera Cluster.
 
 The image is build on top of the existing
-[official MariaDB image](https://hub.docker.com/_/mariadb/) on
-Docker Hub, which is based on Ubuntu 18.04 LTS.
+[official MariaDB 10.6 image](https://hub.docker.com/_/mariadb/) on
+Docker Hub, which is based on Ubuntu 20.04 LTS.
 
 Building the Docker Image
 -------------------------
 
-The image build with this Dockerfile can directly be obtained from
-[Docker Hub](https://hub.docker.com/r/hweidner/galera/). If you prefer
-to build it on your own, do
+TO build the docker images, do
 
-	docker build -t hweidner/galera .
+	docker build -t mydomain/galera .
 
 Run a Galera cluster based on the image
 ---------------------------------------
@@ -58,27 +56,30 @@ The first node can now be started with the command
 		-v /srv/galera/node1:/var/lib/mysql \
 		-e MYSQL_ROOT_PASSWORD=secret_galera_password \
 		-e GALERA_NEW_CLUSTER=1 \
-		hweidner/galera
+		mydomain/galera
 
 On the second and third node, the command is issued without the
 ```GALERA_NEW_CLUSTER``` environment variable, thus connecting to the existing
 cluster instead of building a new one. The ```MYSQL_ROOT_PASSWORD``` variable
 can also be omitted as the node gets the database state from the existing
-cluster nodes.
+cluster nodes. Instead, the MYSQL_ALLOW_EMPTY_PASSWORD variable needs to be
+present to indicate there is no new root password to be set.
 
 	docker run -d --restart=unless-stopped --net galera \
 		--name node2 -h node2 --ip 172.18.0.102 \
 		-p 3312:3306 \
 		-v /srv/galera/node2.cnf:/etc/mysql/conf.d/galera.cnf \
 		-v /srv/galera/node2:/var/lib/mysql \
-		hweidner/galera
+		-e MYSQL_ALLOW_EMPTY_PASSWORD=1 \
+		mydomain/galera
 	
 	docker run -d --restart=unless-stopped --net galera \
 		--name node3 -h node3 --ip 172.18.0.103 \
 		-p 3313:3306 \
 		-v /srv/galera/node3.cnf:/etc/mysql/conf.d/galera.cnf \
 		-v /srv/galera/node3:/var/lib/mysql \
-		hweidner/galera
+		-e MYSQL_ALLOW_EMPTY_PASSWORD=1 \
+		mydomain/galera
 
 The Galera cluster nodes are now reachable over the ports 3311, 3312 and
 3313 on the hypervisor host. They can be reached from MySQL clients, e.g.
